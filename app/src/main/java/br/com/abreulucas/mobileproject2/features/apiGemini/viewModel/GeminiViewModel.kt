@@ -7,6 +7,7 @@ import br.com.abreulucas.mobileproject2.features.apiGemini.service.GeminiRetrofi
 import br.com.abreulucas.mobileproject2.features.apiGemini.model.Contents
 import br.com.abreulucas.mobileproject2.features.apiGemini.model.GeminiRequest
 import br.com.abreulucas.mobileproject2.features.apiGemini.model.Parts
+import br.com.abreulucas.mobileproject2.features.apiRoboflow.model.ClassificationResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,8 +25,11 @@ class GeminiViewModel(application: Application) : AndroidViewModel(application) 
 
     private val apiKey = "AIzaSyCxWeIPY65s9c7U4ArHTq4BpcBC0gas1dU"
 
-    fun askGemini(prompt: String) {
+    fun askGemini(classificationResult: ClassificationResult) {
         _isLoading.value = true
+
+        val prompt = "Após uma análise da imagem da pele, gerou o seguinte resultado: ${classificationResult.className} com uma confiança de ${classificationResult.confidence*100}%. Dê uma explicação, mais detalhes e dicas.(sem usar Markdown)"
+
         viewModelScope.launch {
             try {
                 val request = GeminiRequest(

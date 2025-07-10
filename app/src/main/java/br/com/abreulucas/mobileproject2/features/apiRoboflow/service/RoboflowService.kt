@@ -8,6 +8,6 @@ import retrofit2.http.POST
 
 interface RoboflowService {
     @Headers("Content-Type: application/json")
-    @POST("infer/workflows/healthproject/detect-and-classify")
+    @POST("infer/workflows/dermascan-5kwck/detect-and-classify")
     suspend fun classifyImage(@Body request: RoboflowRequest): RoboflowResponse
 }
