@@ -42,6 +42,10 @@ class RoboflowViewModel(
         }
     }
 
+    fun resetResult() {
+        _result.value = null
+    }
+
     fun classifyImage(context: Context, uri: Uri) {
         _isLoading.value = true
         viewModelScope.launch {

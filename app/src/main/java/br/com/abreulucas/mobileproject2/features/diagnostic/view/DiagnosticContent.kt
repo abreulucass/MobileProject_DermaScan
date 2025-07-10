@@ -24,8 +24,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.navigation.NavController
+import br.com.abreulucas.mobileproject2.common.utils.getCurrentTimestamp
+import br.com.abreulucas.mobileproject2.database.AppDatabase
+import br.com.abreulucas.mobileproject2.database.entity.Consulta
 import br.com.abreulucas.mobileproject2.features.camera.view.CameraXScreen
+import br.com.abreulucas.mobileproject2.features.history.view.format
 import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun DiagnosticoContent(
@@ -41,6 +46,9 @@ fun DiagnosticoContent(
     val geminiResult by geminiViewModel.response.collectAsState()
     val isLoadingGemini by geminiViewModel.isLoading.collectAsState()
     val isLoadingRoboflow by roboflowViewModel.isLoading.collectAsState()
+
+    val db = AppDatabase.getInstance(context)
+    val consultaDao = db.consultaDao()
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 //    var photoUri: Uri? by remember { mutableStateOf(null) }
@@ -88,6 +96,32 @@ fun DiagnosticoContent(
         classificationResult?.let { geminiViewModel.askGemini(classificationResult!!) }
     }
 
+    LaunchedEffect(classificationResult, geminiResult) {
+        if (classificationResult != null && geminiResult != null) {
+            val imagemPath = saveImage(context, selectedImageUri)
+
+            val novaConsulta = Consulta(
+                imageUri = imagemPath,
+                classname = classificationResult!!.className,
+                confidence = classificationResult!!.confidence*100,
+                result = geminiResult!!,
+                timeStamp = getCurrentTimestamp()
+            )
+            // Salvar no banco
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                consultaDao.insertConsulta(novaConsulta)
+            }
+
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            roboflowViewModel.resetResult()
+            geminiViewModel.resetResult()
+        }
+    }
+
     if (showCamera) {
         CameraXScreen(
             onImageCaptured = { uri ->
@@ -130,12 +164,20 @@ fun DiagnosticoContent(
             ) {
 
                 SelectImageButton(
-                    onClick = { galleryLauncher.launch("image/*") },
+                    onClick = {
+                        roboflowViewModel.resetResult()
+                        geminiViewModel.resetResult()
+                        selectedImageUri = null;
+                        galleryLauncher.launch("image/*") },
+
                 )
 
                 CameraButton(
                     onClick = {
                         if (hasCameraPermission) {
+                            roboflowViewModel.resetResult()
+                            geminiViewModel.resetResult()
+                            selectedImageUri = null;
                             showCamera = true
                         } else {
                             permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -152,7 +194,7 @@ fun DiagnosticoContent(
                     CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
                 } else {
                     classificationResult?.let {
-                        ResultCard(title = "Resultado", content = "${classificationResult!!.className} com uma confiança de ${classificationResult!!.confidence*100}%")
+                        ResultCard(title = "Resultado", content = "${classificationResult!!.className} com uma confiança de ${(classificationResult!!.confidence*100).format(2)}%")
 
                         if (isLoadingGemini) {
                             CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
@@ -183,5 +225,22 @@ fun createImageUri(context: Context): Uri {
         "${context.packageName}.provider",
         imageFile
     )
+}
+
+fun saveImage(context: Context, uri: Uri?): String {
+    if(uri != null){
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return ""
+        val filename = "consulta_${System.currentTimeMillis()}.jpg"
+        val file = File(context.filesDir, filename)
+        val outputStream = FileOutputStream(file)
+        inputStream.copyTo(outputStream)
+
+        inputStream.close()
+        outputStream.close()
+
+        return file.absolutePath
+    }
+
+    return "Erro"
 }
 

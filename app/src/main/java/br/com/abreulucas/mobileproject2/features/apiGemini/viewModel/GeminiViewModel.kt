@@ -25,10 +25,15 @@ class GeminiViewModel(application: Application) : AndroidViewModel(application) 
 
     private val apiKey = "AIzaSyCxWeIPY65s9c7U4ArHTq4BpcBC0gas1dU"
 
+    fun resetResult() {
+        _response.value = null
+    }
+
     fun askGemini(classificationResult: ClassificationResult) {
         _isLoading.value = true
 
-        val prompt = "Após uma análise da imagem da pele, gerou o seguinte resultado: ${classificationResult.className} com uma confiança de ${classificationResult.confidence*100}%. Dê uma explicação, mais detalhes e dicas.(sem usar Markdown)"
+        //val prompt = "Após uma análise da imagem da pele, gerou o seguinte resultado: ${classificationResult.className} com uma confiança de ${classificationResult.confidence*100}%. Dê uma explicação, mais detalhes e dicas.(sem usar Markdown)"
+        val prompt = "Voce é um especialista em dermatologia, voce vai receber um resultado com o nome de uma doenca de pele e a porcentagem de confianca, o seu objetivo é informar o usuário sobre a doenca e como ele pode proceder. Após uma análise da imagem da pele, gerou o seguinte resultado: ${classificationResult.className} com uma confiança de ${classificationResult.confidence*100}%, evite usar Negrito"
 
         viewModelScope.launch {
             try {

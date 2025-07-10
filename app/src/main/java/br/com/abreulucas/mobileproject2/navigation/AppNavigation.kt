@@ -11,6 +11,7 @@ import br.com.abreulucas.mobileproject2.HistoricoScreen
 import br.com.abreulucas.mobileproject2.HomeScreen
 import br.com.abreulucas.mobileproject2.MainScreen
 import br.com.abreulucas.mobileproject2.features.diagnostic.view.DiagnosticoScreen
+import br.com.abreulucas.mobileproject2.features.history.view.HistoryScreen
 
 
 @Composable
@@ -32,6 +33,6 @@ fun BottonNavigation(navController: NavHostController, modifier: Modifier = Modi
     ) {
         composable("home") { HomeScreen() }
         composable("diagnostico") { DiagnosticoScreen(navController) }
-        composable("historico") { HistoricoScreen() }
+        composable("historico") { HistoryScreen(navController) }
     }
 }
