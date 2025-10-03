@@ -33,7 +33,7 @@ class RoboflowViewModel(
                 val base64 = Base64.getEncoder().encodeToString(imageBytes)
 
                 val request = RoboflowRequest(
-                    api_key = "zO5kKQ299XJUdpGXD4qt",
+                    api_key = "",
                     inputs = mapOf("image" to image(type = "base64", value = base64))
                 )
 
