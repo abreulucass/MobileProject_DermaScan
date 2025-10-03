@@ -22,7 +22,7 @@ class GeminiViewModel(application: Application) : AndroidViewModel(application) 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    private val apiKey = "AIzaSyCxWeIPY65s9c7U4ArHTq4BpcBC0gas1dU"
+    private val apiKey = ""
 
     fun askGemini(prompt: String) {
         _isLoading.value = true
